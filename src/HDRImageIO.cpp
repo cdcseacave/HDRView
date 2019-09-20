@@ -28,6 +28,7 @@
 #include "Timer.h"
 #include <Eigen/Dense>
 #include <spdlog/spdlog.h>
+#include <TinyNPY.h>
 
 // these pragmas ignore warnings about unused static functions
 #if defined(__clang__)
@@ -79,7 +80,7 @@ void printImageInfo(const tinydng::DNGImage & image);
 HDRImage develop(vector<float> & raw,
                  const tinydng::DNGImage & param1,
                  const tinydng::DNGImage & param2);
-void copyPixelsFromArray(HDRImage & img, float * data, int w, int h, int n, bool convertToLinear)
+void copyPixelsFromArray(HDRImage & img, float * data, int w, int h, int n, bool convertToLinear, bool flip)
 {
 	if (n != 1 && n != 3 && n != 4)
 		throw runtime_error("Only 1- 3- and 4-channel images are supported.");
@@ -101,13 +102,13 @@ void copyPixelsFromArray(HDRImage & img, float * data, int w, int h, int n, bool
 				maxVal = p;
 		}
 		const float delta(maxVal-minVal);
-		parallel_for(0, h, [&img,w,h,n,data,convertToLinear,minVal,delta](int y)
+		parallel_for(0, h, [&img,w,h,n,data,convertToLinear,flip,minVal,delta](int y)
 		{
 			for (int x = 0; x < w; ++x)
 			{
 				const float p(data[x + y * w]);
 				if (p <= 0) {
-					img(x, h-y-1) = Color4(0,0,0,0);
+					img(x, flip?h-y-1:y) = Color4(0,0,0,0);
 					continue;
 				}
 				const float* const t(turboRGBf[(int)std::round(255.f*(p-minVal)/delta)]);
@@ -115,7 +116,7 @@ void copyPixelsFromArray(HDRImage & img, float * data, int w, int h, int n, bool
 						 t[1],
 						 t[0],
 						 1.f);
-				img(x, h-y-1) = SRGBToLinear(c);
+				img(x, flip?h-y-1:y) = SRGBToLinear(c);
 			}
 		});
 		#else
@@ -130,7 +131,7 @@ void copyPixelsFromArray(HDRImage & img, float * data, int w, int h, int n, bool
 		});
 		#endif
 	} else {
-		parallel_for(0, h, [&img,w,n,data,convertToLinear](int y)
+		parallel_for(0, h, [&img,w,h,n,data,convertToLinear,flip](int y)
 		{
 			for (int x = 0; x < w; ++x)
 			{
@@ -138,7 +139,7 @@ void copyPixelsFromArray(HDRImage & img, float * data, int w, int h, int n, bool
 						 data[n * (x + y * w) + 1],
 						 data[n * (x + y * w) + 2],
 						 (n == 3) ? 1.f : data[4 * (x + y * w) + 3]);
-				img(x, y) = convertToLinear ? SRGBToLinear(c) : c;
+				img(x, flip?h-y-1:y) = convertToLinear ? SRGBToLinear(c) : c;
 			}
 		});
 	}
@@ -201,7 +202,7 @@ bool HDRImage::load(const string & filename)
 			resize(w, h);
 			bool convertToLinear = !stbi_is_hdr(filename.c_str());
 			Timer timer;
-			copyPixelsFromArray(*this, float_data, w, h, 4, convertToLinear);
+			copyPixelsFromArray(*this, float_data, w, h, 4, convertToLinear, false);
 			console->debug("Copying image data took: {} seconds.", (timer.elapsed()/1000.f));
 
 			stbi_image_free(float_data);
@@ -231,7 +232,7 @@ bool HDRImage::load(const string & filename)
 
 				    Timer timer;
 				    // convert 1- 3-channel pfm data to 4-channel internal representation
-				    copyPixelsFromArray(*this, float_data, w, h, n, false);
+				    copyPixelsFromArray(*this, float_data, w, h, n, false, true);
 				    console->debug("Copying image data took: {} seconds.", (timer.elapsed() / 1000.f));
 
 				    delete [] float_data;
@@ -247,6 +248,43 @@ bool HDRImage::load(const string & filename)
 	    catch (const exception &e)
 	    {
 		    delete [] float_data;
+		    resize(0, 0);
+		    errors += string("\t") + e.what() + "\n";
+	    }
+    }
+
+
+    // then try npy
+	if (filename.size()>5 && filename.substr(filename.size()-4)==".npy")
+    {
+		try
+	    {
+			NpyArray arr;
+			if (arr.LoadNPY(filename.c_str()) != NULL)
+				throw runtime_error("Could not load NPY image.");
+			if (arr.Shape().size() < 2 || arr.Shape().size() > 3)
+				throw runtime_error("NPY not an image.");
+		    w = arr.Shape()[1];
+		    h = arr.Shape()[0];
+			n = arr.Shape().size() == 2 ? 1 : arr.Shape()[2];
+			if ((n == 3 || n == 4 || n == 1) && arr.ValueType() == typeid(float))
+			{
+				resize(w, h);
+
+				Timer timer;
+				// convert 1- 3-channel NPY data to 4-channel internal representation
+				copyPixelsFromArray(*this, (float*)arr.Data(), w, h, n, false, false);
+				console->debug("Copying image data took: {} seconds.", (timer.elapsed() / 1000.f));
+
+				return true;
+			}
+			else
+			if (n != 4 || arr.ValueType() != typeid(uint8_t))
+				throw runtime_error("Only 1- 3- 4-channel float NPYs are currently supported.");
+			return true;
+	    }
+	    catch (const exception &e)
+	    {
 		    resize(0, 0);
 		    errors += string("\t") + e.what() + "\n";
 	    }

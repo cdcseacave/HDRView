@@ -437,6 +437,7 @@ bool HDRViewScreen::loadImage()
 			{"pfm", "Portable FloatMap image"},
 			{"ppm", "Portable PixMap image"},
 			{"pnm", "Portable AnyMap image"},
+			{"npy", "NumPy Array image"},
 			{"jpg", "JPEG image"},
 			{"tga", "Truevision Targa image"},
 			{"pic", "Softimage PIC image"},

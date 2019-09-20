@@ -119,6 +119,8 @@ include_directories(
     ${OPENEXR_INCLUDE_DIRS}
     # tinydir
     ${TINYDIR_INCLUDE_DIR}
+    # tinynpy
+    ${TINYNPY_INCLUDE_DIR}
     # docopt
     ${DOCOPT_INCLUDE_DIR}
     # spdlog
@@ -249,7 +251,7 @@ add_executable(hdrbatch
 add_executable(force-random-dither
     src/forced-random-dither.cpp)
 
-target_link_libraries(HDRView IlmImf nanogui docopt_s ${NANOGUI_EXTRA_LIBS} ${Boost_REGEX_LIBRARY})
+target_link_libraries(HDRView IlmImf nanogui docopt_s TinyNPY ${NANOGUI_EXTRA_LIBS} ${Boost_REGEX_LIBRARY})
 target_link_libraries(hdrbatch IlmImf docopt_s ${Boost_REGEX_LIBRARY})
 target_link_libraries(force-random-dither nanogui ${NANOGUI_EXTRA_LIBS})
 

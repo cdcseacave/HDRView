@@ -21,3 +21,6 @@
 [submodule "ext/nanogui"]
 	path = ext/nanogui
 	url = https://github.com/wjakob/nanogui.git
+[submodule "ext/tinynpy"]
+	path = ext/tinynpy
+	url = https://github.com/cdcseacave/TinyNPY.git

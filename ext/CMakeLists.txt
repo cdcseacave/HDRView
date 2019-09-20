@@ -27,6 +27,14 @@ if (WIN32)
 endif()
 
 #============================================================================
+# Build TinyNPY
+#============================================================================
+set(BUILD_DEMO OFF CACHE BOOL " " FORCE)
+set(BUILD_STATIC_LIBS ON CACHE BOOL " " FORCE)
+add_subdirectory(tinynpy)
+set_property(TARGET TinyNPY PROPERTY FOLDER "dependencies")
+
+#============================================================================
 # Build OpenEXR
 #============================================================================
 set(ILMBASE_BUILD_SHARED_LIBS OFF CACHE BOOL " " FORCE)
@@ -95,6 +103,8 @@ set(TINYDIR_INCLUDE_DIR
     ${CMAKE_CURRENT_SOURCE_DIR}/tinydir PARENT_SCOPE)
 set(TINYDNG_INCLUDE_DIR
     ${CMAKE_CURRENT_SOURCE_DIR}/tinydngloader PARENT_SCOPE)
+set(TINYNPY_INCLUDE_DIR
+    ${CMAKE_CURRENT_SOURCE_DIR}/tinynpy PARENT_SCOPE)
 set(STB_INCLUDE_DIR
     ${CMAKE_CURRENT_SOURCE_DIR}/stb PARENT_SCOPE)
 set(SPDLOG_INCLUDE_DIR
