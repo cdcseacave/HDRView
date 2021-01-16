@@ -197,6 +197,30 @@ bool HDRImage::load(const string & filename)
 		stbi_ldr_to_hdr_gamma(1.0f);
 
 		float * float_data = stbi_loadf(filename.c_str(), &w, &h, &n, 4);
+		if (n == 1 && filename.size()>5 && filename.substr(filename.size()-4)==".png") {
+			FILE *f = stbi__fopen(filename.c_str(), "rb");
+			stbi__context s;
+			stbi__start_file(&s,f);
+			stbi__result_info ri;
+			void *result = stbi__load_main(&s, &w, &h, &n, 1, &ri, 8);
+			fclose(f);
+			if (ri.bits_per_channel == 16) {
+				stbi_image_free(float_data);
+				resize(w, h);
+
+				Timer timer;
+				// convert 1-channel PNG data to 4-channel internal representation
+				const uint16_t* data16 = (const uint16_t*)result;
+				std::vector<float> data(w*h);
+				for (int i=0; i<w*h; ++i)
+					if ((data[i] = ((float)data16[i]) / 1000.f) > 5.f)
+						data[i] = 0.f;
+				copyPixelsFromArray(*this, data.data(), w, h, n, false, true);
+				console->debug("Copying image data took: {} seconds.", (timer.elapsed() / 1000.f));
+
+				return true;
+			}
+		}
 		if (float_data)
 		{
 			resize(w, h);

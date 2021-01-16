@@ -83,7 +83,10 @@ int main(int argc, char **argv)
         spd::set_pattern("[%l] %v");
         spd::set_level(spd::level::level_enum(2));
 
-		#ifndef _DEBUG
+		#ifdef _MSC_VER
+        if (argVector.size() == 1)
+            inFiles.emplace_back(argVector[0]);
+        #else
         docargs = docopt::docopt(USAGE, argVector,
                                  true,            // show help if requested
                                  "HDRView " HDRVIEW_VERSION);  // version string
