@@ -138,10 +138,10 @@ public:
     //-----------------------------------------------------------------------
     //@{ \name Transformations.
     //-----------------------------------------------------------------------
-    HDRImage flippedVertical() const    {return rowwise().reverse().eval();}
-    HDRImage flippedHorizontal() const  {return colwise().reverse().eval();}
-    HDRImage rotated90CW() const        {return transpose().colwise().reverse().eval();}
-    HDRImage rotated90CCW() const       {return transpose().rowwise().reverse().eval();}
+    HDRImage flippedVertical() const    {HDRImage img = rowwise().reverse().eval();             img.intensity() = intensity().rowwise().reverse().eval(); return img;}
+    HDRImage flippedHorizontal() const  {HDRImage img = colwise().reverse().eval();             img.intensity() = intensity().colwise().reverse().eval(); return img;}
+    HDRImage rotated90CW() const        {HDRImage img = transpose().colwise().reverse().eval(); img.intensity() = intensity().transpose().colwise().reverse().eval(); return img;}
+    HDRImage rotated90CCW() const       {HDRImage img = transpose().rowwise().reverse().eval(); img.intensity() = intensity().transpose().rowwise().reverse().eval(); return img;}
     //@}
 
 

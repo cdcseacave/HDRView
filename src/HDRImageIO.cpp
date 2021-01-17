@@ -217,7 +217,7 @@ bool HDRImage::load(const string & filename)
 					for (int x=0; x<w; ++x)
 						if ((data(x,y) = ((float)data16[y*w+x]) / 1000.f) > 5.f)
 							data(x,y) = 0.f;
-				copyPixelsFromArray(*this, data.data(), w, h, n, false, true);
+				copyPixelsFromArray(*this, data.data(), w, h, n, false, false);
 				console->debug("Copying image data took: {} seconds.", (timer.elapsed() / 1000.f));
 
 				return true;
@@ -261,7 +261,7 @@ bool HDRImage::load(const string & filename)
 					{
 						Intensity& data = intensity();
 						data.resize(w, h);
-						data = Eigen::Map<const Intensity>(float_data, w,h);
+						data = Eigen::Map<const Intensity>(float_data, w,h).rowwise().reverse();
 					}
 					// convert 1- 3-channel pfm data to 4-channel internal representation
 				    copyPixelsFromArray(*this, float_data, w, h, n, false, true);
