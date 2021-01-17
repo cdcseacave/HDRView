@@ -211,10 +211,12 @@ bool HDRImage::load(const string & filename)
 				Timer timer;
 				// convert 1-channel PNG data to 4-channel internal representation
 				const uint16_t* data16 = (const uint16_t*)result;
-				std::vector<float> data(w*h);
-				for (int i=0; i<w*h; ++i)
-					if ((data[i] = ((float)data16[i]) / 1000.f) > 5.f)
-						data[i] = 0.f;
+				Intensity& data = intensity();
+				data.resize(w, h);
+				for (int y=0; y<h; ++y)
+					for (int x=0; x<w; ++x)
+						if ((data(x,y) = ((float)data16[y*w+x]) / 1000.f) > 5.f)
+							data(x,y) = 0.f;
 				copyPixelsFromArray(*this, data.data(), w, h, n, false, true);
 				console->debug("Copying image data took: {} seconds.", (timer.elapsed() / 1000.f));
 
@@ -255,15 +257,19 @@ bool HDRImage::load(const string & filename)
 				    resize(w, h);
 
 				    Timer timer;
-				    // convert 1- 3-channel pfm data to 4-channel internal representation
+					if (n == 1)
+					{
+						Intensity& data = intensity();
+						data.resize(w, h);
+						data = Eigen::Map<const Intensity>(float_data, w,h);
+					}
+					// convert 1- 3-channel pfm data to 4-channel internal representation
 				    copyPixelsFromArray(*this, float_data, w, h, n, false, true);
 				    console->debug("Copying image data took: {} seconds.", (timer.elapsed() / 1000.f));
-
-				    delete [] float_data;
-				    return true;
 			    }
 			    else
 				    throw runtime_error("Only 3-channel or 1-channel PFMs are currently supported.");
+				delete [] float_data;
 			    return true;
 		    }
 		    else
@@ -296,6 +302,12 @@ bool HDRImage::load(const string & filename)
 				resize(w, h);
 
 				Timer timer;
+				if (n == 1 && arr.ValueType() == typeid(float))
+				{
+					Intensity& data = intensity();
+					data.resize(w, h);
+					data = Eigen::Map<const Intensity>((float*)arr.Data(), w,h);
+				}
 				// convert 1- 3-channel NPY data to 4-channel internal representation
 				copyPixelsFromArray(*this, (float*)arr.Data(), w, h, n, false, false);
 				console->debug("Copying image data took: {} seconds.", (timer.elapsed() / 1000.f));
@@ -339,15 +351,30 @@ bool HDRImage::load(const string & filename)
 
 		    resize(w, h);
 
-		    // copy pixels over to the Image
-		    parallel_for(0, h, [this, w, &pixels](int y)
-		    {
-			    for (int x = 0; x < w; ++x)
-			    {
-				    const Imf::Rgba &p = pixels[y][x];
-				    (*this)(x, y) = Color4(p.r, p.g, p.b, p.a);
-			    }
-		    });
+			if (file.channels() == Imf::WRITE_Y) {
+				// convert intensity to RGB pixels over to the Image
+				Intensity& data = intensity();
+				data.resize(w, h);
+				parallel_for(0, h, [&data, w, &pixels](int y)
+				{
+					for (int x = 0; x < w; ++x)
+					{
+						const Imf::Rgba &p = pixels[y][x];
+						data(x,y) = float(p.r);
+					}
+				});
+				copyPixelsFromArray(*this, data.data(), w, h, 1, false, false);
+			} else {
+				// copy pixels over to the Image
+				parallel_for(0, h, [this, w, &pixels](int y)
+				{
+					for (int x = 0; x < w; ++x)
+					{
+						const Imf::Rgba &p = pixels[y][x];
+						(*this)(x, y) = Color4(p.r, p.g, p.b, p.a);
+					}
+				});
+			}
 
 		    console->debug("Copying EXR image data took: {} seconds.", (timer.lap() / 1000.f));
 		    return true;

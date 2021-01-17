@@ -266,8 +266,9 @@ HDRViewScreen::HDRViewScreen(float exposure, float gamma, bool sRGB, bool dither
 		                            if (img && img->contains(pixelCoord))
 		                            {
 			                            string s = fmt::format(
-				                            "({: 4d},{: 4d}) = ({: 6.3f}, {: 6.3f}, {: 6.3f}, {: 6.3f}) / ({: 3d}, {: 3d}, {: 3d}, {: 3d})",
+				                            "({: 4d},{: 4d}) = {}({: 6.3f}, {: 6.3f}, {: 6.3f}, {: 6.3f}) / ({: 3d}, {: 3d}, {: 3d}, {: 3d})",
 				                            pixelCoord.x(), pixelCoord.y(),
+											img->image().intensity().size() ? fmt::format("{: 6.3f} / ", img->image().intensity()(pixelCoord.x(), pixelCoord.y())).c_str() : "",
 				                            pixelVal[0], pixelVal[1], pixelVal[2], pixelVal[3],
 				                            (int) round(iPixelVal[0]), (int) round(iPixelVal[1]),
 				                            (int) round(iPixelVal[2]), (int) round(iPixelVal[3]));
@@ -311,7 +312,7 @@ HDRViewScreen::HDRViewScreen(float exposure, float gamma, bool sRGB, bool dither
 
 	dropEvent(args);
 
-	this->setSize(Vector2i(1024, 800));
+	this->setSize(Vector2i(1024, 640));
 	updateLayout();
 	setResizeCallback([&](Vector2i)
 	                  {

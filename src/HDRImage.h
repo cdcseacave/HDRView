@@ -19,6 +19,9 @@ class HDRImage : public Eigen::Array<Color4,Eigen::Dynamic,Eigen::Dynamic>
 {
 using Base = Eigen::Array<Color4,Eigen::Dynamic,Eigen::Dynamic>;
 public:
+    using Intensity = Eigen::Array<float,Eigen::Dynamic,Eigen::Dynamic>;
+
+public:
     //-----------------------------------------------------------------------
     //@{ \name Constructors, destructors, etc.
     //-----------------------------------------------------------------------
@@ -42,6 +45,9 @@ public:
     int width() const       { return (int)rows(); }
     int height() const      { return (int)cols(); }
     bool isNull() const     { return rows() == 0 || cols() == 0; }
+
+    const Intensity & intensity() const  { return m_intensity; }
+    Intensity & intensity()              { return m_intensity; }
 
     void setAlpha(float a)
     {
@@ -252,6 +258,9 @@ public:
 
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+private:
+    Intensity m_intensity;
 };
 
 
