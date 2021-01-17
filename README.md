@@ -2,16 +2,18 @@
 
 Master status:
 [![Ubuntu build status](https://semaphoreci.com/api/v1/wjarosz/hdrview/branches/master/shields_badge.svg)](https://semaphoreci.com/wjarosz/hdrview)
-[![Windows build status](https://ci.appveyor.com/api/projects/status/bitbucket/wkjarosz/hdrview?svg=true&branch=master&passingText=master%20-%20OK&failingText=master%20-%20failed&pendingText=master%20-%20pending)](https://ci.appveyor.com/project/wkjarosz/hdrview/branch/master)
+[![Windows build status](https://ci.appveyor.com/api/projects/status/github/cdcseacave/hdrview?branch=master&svg=true)](https://ci.appveyor.com/project/cdcseacave/hdrview/branch/master)
 
 Develop status:
 [![Ubuntu build status](https://semaphoreci.com/api/v1/wjarosz/hdrview/branches/develop/shields_badge.svg)](https://semaphoreci.com/wjarosz/hdrview)
-[![Windows build status](https://ci.appveyor.com/api/projects/status/bitbucket/wkjarosz/hdrview?svg=true&branch=develop&passingText=develop%20-%20OK&failingText=develop%20-%20failed&pendingText=develop%20-%20pending)](https://ci.appveyor.com/project/wkjarosz/hdrview/branch/master)
+[![Windows build status](https://ci.appveyor.com/api/projects/status/github/cdcseacave/hdrview?branch=develop&svg=true)](https://ci.appveyor.com/project/cdcseacave/hdrview/branch/develop)
 
 
-HDRView is a simple research-oriented high-dynamic range image viewer with an emphasis on examining and comparing images, and including minimalistic tonemapping capabilities. HDRView currently supports reading EXR, PNG, TGA, BMP, HDR, JPG, GIF, PNM, PFM, and PSD images and writing EXR, HDR, PNG, TGA, PPM, PFM, and BMP images.
+HDRView is a simple research-oriented depth-map & high-dynamic range image viewer with an emphasis on examining and comparing images, and including minimalistic tonemapping capabilities. HDRView currently supports reading EXR, PNG, TGA, BMP, HDR, JPG, GIF, PNM, PFM, and PSD images and writing EXR, HDR, PNG, TGA, PPM, PFM, and BMP images.
 
 ## Example screenshots
+HDRView supports loading several depth-map formats (PFM, PNG 1-channel-16bit, EXR, NPY) and convert them to RGB images for visualization.
+![Screenshot](resources/screenshot0.png "Screenshot0")
 HDRView supports loading several images and provides exposure and gamma/sRGB tone mapping control with high-quality dithering of HDR images.
 ![Screenshot](resources/screenshot1.png "Screenshot1")
 When sufficiently zoomed in, HDRView can overlay the pixel grid and numeric color values on each pixel to facilitate inspection.
