@@ -76,6 +76,8 @@ if (MSVC)
         string(REPLACE "/MD" "/MT" ${CompilerFlag} "${${CompilerFlag}}")
     endforeach()
 elseif(APPLE)
+    # silence GL deprecation warnings.
+    add_definitions(-DGL_SILENCE_DEPRECATION)
     # Try to auto-detect a suitable SDK
     # Commented out for now -- causes a too new SDK to be selected on AppVeyor
     #execute_process(COMMAND bash -c "xcodebuild -version -sdk | grep MacOSX | grep Path | head -n 1 | cut -f 2 -d ' '" OUTPUT_VARIABLE CMAKE_OSX_SYSROOT)
@@ -117,6 +119,8 @@ include_directories(
     ${OPENEXR_INCLUDE_DIRS}
     # tinydir
     ${TINYDIR_INCLUDE_DIR}
+    # tinynpy
+    ${TINYNPY_INCLUDE_DIR}
     # docopt
     ${DOCOPT_INCLUDE_DIR}
     # spdlog
@@ -247,8 +251,8 @@ add_executable(hdrbatch
 add_executable(force-random-dither
     src/forced-random-dither.cpp)
 
-target_link_libraries(HDRView IlmImf nanogui docopt_s ${NANOGUI_EXTRA_LIBS} ${Boost_REGEX_LIBRARY})
-target_link_libraries(hdrbatch IlmImf docopt_s ${Boost_REGEX_LIBRARY})
+target_link_libraries(HDRView IlmImf nanogui docopt_s TinyNPY ${NANOGUI_EXTRA_LIBS} ${Boost_REGEX_LIBRARY})
+target_link_libraries(hdrbatch IlmImf docopt_s TinyNPY ${Boost_REGEX_LIBRARY})
 target_link_libraries(force-random-dither nanogui ${NANOGUI_EXTRA_LIBS})
 
 if (NOT ${CMAKE_VERSION} VERSION_LESS 3.3 AND IWYU)

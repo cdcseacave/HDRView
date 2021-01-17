@@ -19,6 +19,9 @@ class HDRImage : public Eigen::Array<Color4,Eigen::Dynamic,Eigen::Dynamic>
 {
 using Base = Eigen::Array<Color4,Eigen::Dynamic,Eigen::Dynamic>;
 public:
+    using Intensity = Eigen::Array<float,Eigen::Dynamic,Eigen::Dynamic>;
+
+public:
     //-----------------------------------------------------------------------
     //@{ \name Constructors, destructors, etc.
     //-----------------------------------------------------------------------
@@ -42,6 +45,9 @@ public:
     int width() const       { return (int)rows(); }
     int height() const      { return (int)cols(); }
     bool isNull() const     { return rows() == 0 || cols() == 0; }
+
+    const Intensity & intensity() const  { return m_intensity; }
+    Intensity & intensity()              { return m_intensity; }
 
     void setAlpha(float a)
     {
@@ -132,10 +138,10 @@ public:
     //-----------------------------------------------------------------------
     //@{ \name Transformations.
     //-----------------------------------------------------------------------
-    HDRImage flippedVertical() const    {return rowwise().reverse().eval();}
-    HDRImage flippedHorizontal() const  {return colwise().reverse().eval();}
-    HDRImage rotated90CW() const        {return transpose().colwise().reverse().eval();}
-    HDRImage rotated90CCW() const       {return transpose().rowwise().reverse().eval();}
+    HDRImage flippedVertical() const    {HDRImage img = rowwise().reverse().eval();             img.intensity() = intensity().rowwise().reverse().eval(); return img;}
+    HDRImage flippedHorizontal() const  {HDRImage img = colwise().reverse().eval();             img.intensity() = intensity().colwise().reverse().eval(); return img;}
+    HDRImage rotated90CW() const        {HDRImage img = transpose().colwise().reverse().eval(); img.intensity() = intensity().transpose().colwise().reverse().eval(); return img;}
+    HDRImage rotated90CCW() const       {HDRImage img = transpose().rowwise().reverse().eval(); img.intensity() = intensity().transpose().rowwise().reverse().eval(); return img;}
     //@}
 
 
@@ -252,6 +258,9 @@ public:
 
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+private:
+    Intensity m_intensity;
 };
 
 

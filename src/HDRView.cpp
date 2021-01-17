@@ -57,14 +57,13 @@ int main(int argc, char **argv)
     vector<string> argVector = { argv + 1, argv + argc };
     map<string, docopt::value> docargs;
     int verbosity = 0;
-    float gamma = 2.2f, exposure;
+    float gamma = 2.2f, exposure = 0.f;
     bool dither = true, sRGB = true;
 
     vector<string> inFiles;
 
     try
     {
-
 #if defined(__APPLE__)
         bool launched_from_finder = false;
         // check whether -psn is set, and remove it from the arguments
@@ -78,16 +77,21 @@ int main(int argc, char **argv)
             }
         }
 #endif
-        docargs = docopt::docopt(USAGE, argVector,
-                                 true,            // show help if requested
-                                 "HDRView " HDRVIEW_VERSION);  // version string
-
-        verbosity = docargs["--verbose"].asLong();
 
         // Console logger with color
         auto console = spd::stdout_color_mt("console");
         spd::set_pattern("[%l] %v");
         spd::set_level(spd::level::level_enum(2));
+
+		#ifdef _MSC_VER
+        if (argVector.size() == 1)
+            inFiles.emplace_back(argVector[0]);
+        #else
+        docargs = docopt::docopt(USAGE, argVector,
+                                 true,            // show help if requested
+                                 "HDRView " HDRVIEW_VERSION);  // version string
+
+        verbosity = docargs["--verbose"].asLong();
 
         if (verbosity < spd::level::trace || verbosity > spd::level::off)
         {
@@ -123,6 +127,7 @@ int main(int argc, char **argv)
 
 	    // list of filenames
 	    inFiles = docargs["FILE"].asStringList();
+		#endif
 
         console->info("Launching GUI.");
         nanogui::init();

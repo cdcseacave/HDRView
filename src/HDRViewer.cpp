@@ -266,8 +266,9 @@ HDRViewScreen::HDRViewScreen(float exposure, float gamma, bool sRGB, bool dither
 		                            if (img && img->contains(pixelCoord))
 		                            {
 			                            string s = fmt::format(
-				                            "({: 4d},{: 4d}) = ({: 6.3f}, {: 6.3f}, {: 6.3f}, {: 6.3f}) / ({: 3d}, {: 3d}, {: 3d}, {: 3d})",
+				                            "({: 4d},{: 4d}) = {}({: 6.3f}, {: 6.3f}, {: 6.3f}, {: 6.3f}) / ({: 3d}, {: 3d}, {: 3d}, {: 3d})",
 				                            pixelCoord.x(), pixelCoord.y(),
+											img->image().intensity().size() ? fmt::format("{: 6.3f} / ", img->image().intensity()(pixelCoord.x(), pixelCoord.y())).c_str() : "",
 				                            pixelVal[0], pixelVal[1], pixelVal[2], pixelVal[3],
 				                            (int) round(iPixelVal[0]), (int) round(iPixelVal[1]),
 				                            (int) round(iPixelVal[2]), (int) round(iPixelVal[3]));
@@ -311,7 +312,7 @@ HDRViewScreen::HDRViewScreen(float exposure, float gamma, bool sRGB, bool dither
 
 	dropEvent(args);
 
-	this->setSize(Vector2i(1024, 800));
+	this->setSize(Vector2i(1024, 640));
 	updateLayout();
 	setResizeCallback([&](Vector2i)
 	                  {
@@ -437,6 +438,7 @@ bool HDRViewScreen::loadImage()
 			{"pfm", "Portable FloatMap image"},
 			{"ppm", "Portable PixMap image"},
 			{"pnm", "Portable AnyMap image"},
+			{"npy", "NumPy Array image"},
 			{"jpg", "JPEG image"},
 			{"tga", "Truevision Targa image"},
 			{"pic", "Softimage PIC image"},
@@ -682,6 +684,7 @@ bool HDRViewScreen::keyboardEvent(int key, int scancode, int action, int modifie
 	        }
 		    return false;
 
+        case GLFW_KEY_KP_0:
 	    case '0':
 		    if (modifiers & SYSTEM_COMMAND_MOD)
 		    {
@@ -693,9 +696,10 @@ bool HDRViewScreen::keyboardEvent(int key, int scancode, int action, int modifie
 		    return false;
     }
 
-	if (key >= GLFW_KEY_1 && key <= GLFW_KEY_9)
+	if ((key >= GLFW_KEY_1 && key <= GLFW_KEY_9) || (key >= GLFW_KEY_KP_1 && key <= GLFW_KEY_KP_9))
 	{
-		int idx = (key - GLFW_KEY_1) % 10;
+        int keyOffset = (key >= GLFW_KEY_KP_1) ? GLFW_KEY_KP_1 : GLFW_KEY_1;
+        int idx = (key - keyOffset) % 10;
 
 		if (modifiers & SYSTEM_COMMAND_MOD && idx < NUM_CHANNELS)
 		{
@@ -710,7 +714,7 @@ bool HDRViewScreen::keyboardEvent(int key, int scancode, int action, int modifie
 		else
 		{
 			auto nth = m_imagesPanel->nthVisibleImageIndex(idx);
-			if (nth > 0)
+			if (nth >= 0)
 				m_imagesPanel->setCurrentImageIndex(nth);
 		}
 		return false;

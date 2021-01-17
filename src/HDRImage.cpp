@@ -585,6 +585,9 @@ HDRImage HDRImage::resized(int w, int h) const
     if (!stbir_resize_float((const float *)data(), width(), height(), 0,
                             (float *) newImage.data(), w, h, 0, 4))
         throw runtime_error("Failed to resize image.");
+    if (intensity().size() && !stbir_resize_float((const float *)intensity().data(), width(),
+                            height(), 0, (float *) newImage.intensity().data(), w, h, 0, 1))
+        throw runtime_error("Failed to resize image.");
 
     return newImage;
 }
