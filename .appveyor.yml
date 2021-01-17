@@ -5,19 +5,18 @@ branches:
   - develop
 os: Visual Studio 2017
 configuration:
-- Release
-- Debug
-- RelWithDebInfo
-platform: x64
+  - Debug
+  - Release
+platform:
+  - x64
 clone_folder: C:\projects\hdrview
 install:
-- cmd: git submodule update --init --recursive
+  - git submodule update --init --recursive
 before_build:
-- cmd: >-
-    echo Running cmake...
-    
-    cmake -DBOOST_ROOT=C:\Libraries\boost_1_64_0 -G "Visual Studio 15 2017 Win64" .
-build:
-  project: hdrview.sln
-  verbosity: minimal
+  - cmake -DCMAKE_BUILD_TYPE=%Configuration% -DBOOST_ROOT=C:\Libraries\boost_1_64_0 -G "Visual Studio 15 2017 Win64" .
+build_script:
+  - cmake --build . --target ALL_BUILD --config %Configuration% --parallel 4
+on_success:
+  - cmd: 7z a HDRView_x64.7z "C:\projects\hdrview\%Configuration%\*.exe"
+  - cmd: appveyor PushArtifact HDRView_x64.7z
 test: off

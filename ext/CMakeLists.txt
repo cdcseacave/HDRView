@@ -29,10 +29,19 @@ endif()
 #============================================================================
 # Build TinyNPY
 #============================================================================
-set(BUILD_DEMO OFF CACHE BOOL " " FORCE)
-set(BUILD_STATIC_LIBS ON CACHE BOOL " " FORCE)
-add_subdirectory(tinynpy)
-set_property(TARGET TinyNPY PROPERTY FOLDER "dependencies")
+if (FALSE)
+	set(BUILD_DEMO OFF CACHE BOOL " " FORCE)
+	set(BUILD_SHARED_LIBS OFF CACHE BOOL " " FORCE)
+	set(BUILD_STATIC_LIBS ON CACHE BOOL " " FORCE)
+	add_subdirectory(tinynpy EXCLUDE_FROM_ALL)
+	set_property(TARGET TinyNPYstatic PROPERTY FOLDER "dependencies")
+else()
+	add_library(TinyNPY STATIC
+		${CMAKE_CURRENT_SOURCE_DIR}/tinynpy/TinyNPY.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/tinynpy/TinyNPY.h)	
+	target_link_libraries(TinyNPY PRIVATE zlibstatic)
+	set_property(TARGET TinyNPY PROPERTY FOLDER "dependencies")
+endif()
 
 #============================================================================
 # Build OpenEXR
@@ -42,7 +51,7 @@ set(OPENEXR_BUILD_SHARED_LIBS OFF CACHE BOOL " " FORCE)
 set(ILMBASE_NAMESPACE_VERSIONING OFF CACHE BOOL " " FORCE)
 set(OPENEXR_NAMESPACE_VERSIONING OFF CACHE BOOL " " FORCE)
 add_subdirectory(openexr EXCLUDE_FROM_ALL)
-set_property(TARGET IexMath eLut toFloat b44ExpLogTable dwaLookups CopyIlmBaseLibs IlmThread Half Iex Imath IlmImf PROPERTY FOLDER "dependencies")
+set_property(TARGET IexMath eLut toFloat b44ExpLogTable dwaLookups CopyIlmBaseLibs IlmThread Half Iex Imath IlmImf IlmImf-obj PROPERTY FOLDER "dependencies")
 
 #============================================================================
 # Build NanoGUI
@@ -64,7 +73,7 @@ if (WIN32)
 	set(Boost_USE_STATIC_RUNTIME ON)
     find_package(Boost 1.53 REQUIRED COMPONENTS regex)
 endif()
-set_property(TARGET docopt PROPERTY FOLDER "dependencies")
+set_property(TARGET docopt docopt_s PROPERTY FOLDER "dependencies")
 
 #============================================================================
 # Handle zlib and boost dependencies on windows

@@ -252,7 +252,7 @@ add_executable(force-random-dither
     src/forced-random-dither.cpp)
 
 target_link_libraries(HDRView IlmImf nanogui docopt_s TinyNPY ${NANOGUI_EXTRA_LIBS} ${Boost_REGEX_LIBRARY})
-target_link_libraries(hdrbatch IlmImf docopt_s ${Boost_REGEX_LIBRARY})
+target_link_libraries(hdrbatch IlmImf docopt_s TinyNPY ${Boost_REGEX_LIBRARY})
 target_link_libraries(force-random-dither nanogui ${NANOGUI_EXTRA_LIBS})
 
 if (NOT ${CMAKE_VERSION} VERSION_LESS 3.3 AND IWYU)
