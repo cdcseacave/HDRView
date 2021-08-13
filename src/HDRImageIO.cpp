@@ -365,6 +365,30 @@ bool HDRImage::load(const string & filename)
 				});
 				copyPixelsFromArray(*this, data.data(), w, h, 1, false, false);
 			} else {
+				for (int y = 0; y < h; ++y)
+					for (int x = 0; x < w; ++x)
+					{
+						const Imf::Rgba &p = pixels[y][x];
+						if (p.r != p.g || p.g != p.b)
+							goto ProcessRGB;
+					}
+				ProcessIntensity:
+				// copy intensity image
+				{
+					Intensity& data = intensity();
+					data.resize(w, h);
+					for (int y = 0; y < h; ++y)
+						for (int x = 0; x < w; ++x)
+						{
+							const Imf::Rgba &p = pixels[y][x];
+							const float v(p.r);
+							data(x,y) = v;
+						}
+					// convert 1- exr data to 4-channel internal representation
+					copyPixelsFromArray(*this, data.data(), w, h, 1, false, false);
+					goto ProcessEnd;
+				}
+				ProcessRGB:
 				// copy pixels over to the Image
 				parallel_for(0, h, [this, w, &pixels](int y)
 				{
@@ -374,6 +398,7 @@ bool HDRImage::load(const string & filename)
 						(*this)(x, y) = Color4(p.r, p.g, p.b, p.a);
 					}
 				});
+				ProcessEnd:;
 			}
 
 		    console->debug("Copying EXR image data took: {} seconds.", (timer.lap() / 1000.f));
